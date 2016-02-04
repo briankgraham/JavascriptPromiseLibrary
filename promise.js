@@ -1,12 +1,30 @@
 var Promise = function (func) {
-  var callback = null;
+  var state = 'PENDING', 
+      value, 
+      deferred;
+  
   this.then = function (cb) {
-    callback = cb;
-  }
-
-  function resolve (value) {
-    setTimeout(callback(value), 1);
+    handle(cb);
   }
 
   func(resolve);
+  
+  function resolve (newValue) {
+    value = newValue;
+    state = 'RESOLVED';
+
+    if (deferred) {
+      handle(deferred);
+    }
+  }
+
+  function handle (onResolved) {
+    if (state === 'PENDING') {
+      deferred = onResolved;
+      return;
+    }
+
+    onResolved(value);
+  }
+
 };
