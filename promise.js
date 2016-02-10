@@ -1,24 +1,27 @@
-// TO DO: ALLOW FOR MORE THAN OTHER DEFERRED 
 function handle(promise, val) {
   var item, deferred;
 
   promise.result = val;
-  while (promise.queue.length) {
-    item = promise.queue.shift();
-    if (item.state === 'REJECTED') {
-      deferred = item.errback;
-    } else {
-      deferred = item.callback;
-    }
-    if (deferred) {
-      try {
-        promise.result = deferred(promise.result);
-      } catch (e) {
-        promise.state = 'REJECTED';
-        promise.result = e;
+
+  setTimeout(function () {
+    while (promise.queue.length) {
+      item = promise.queue.shift();
+      if (item.state === 'REJECTED') {
+        deferred = item.errback;
+      } else {
+        deferred = item.callback;
       }
-    }
-  }
+      if (deferred) {
+        try {
+          promise.result = deferred(promise.result);
+        } catch (e) {
+          promise.state = 'REJECTED';
+          promise.result = e;
+        }
+      }
+    }   
+  }, 1);
+  
 
 }
 
@@ -43,7 +46,6 @@ Promise.prototype.then = function (callback, errback) {
 
 Promise.prototype.resolve = function (newValue) {
   // check if Rejected / Fulfilled
-  console.log(this.state)
   if (this.state === 'REJECTED') {
     throw new Error('Promise has been rejected');
   }
@@ -52,7 +54,7 @@ Promise.prototype.resolve = function (newValue) {
   }
   this.result = newValue;
   this.state = 'RESOLVED';
-  handle(this, newValue);
+  handle(this, this.result);
 };
 
 Promise.prototype.reject = function (error) {
@@ -70,18 +72,24 @@ Promise.prototype.reject = function (error) {
 };
 
 
-var Promise = new Promise(function (resolve, reject) {
+var Promises = new Promise(function (resolve, reject) {
   resolve(5)
 });
 
 
-console.log(Promise.then(function (res) {
+console.log(Promises.then(function (res) {
   console.log('first: ' , res)
   return res + 1;
 }).then(function (resp) {
   console.log('resp: ', resp)
-  return resp + 1;
-}).then(function (news) {
-  console.log('news: ', news)
-}))
+  setTimeout(function () {
+    return new Promise(function (resolve, reject) {
+      resolve(resp+1);
+    }).then(function (lastVal) {
+      console.log('lastVal: ', lastVal);
+    });
+  }, 1000);
+  
+}));
 // console.log(Promise)
+console.log('hey this should be first not last')
