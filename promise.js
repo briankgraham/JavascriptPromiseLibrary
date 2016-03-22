@@ -21,8 +21,6 @@ function handle(promise, val) {
       }
     }   
   }, 1);
-  
-
 }
 
 var Promise = function (func) {
@@ -73,7 +71,9 @@ Promise.prototype.reject = function (error) {
 
 
 var Promises = new Promise(function (resolve, reject) {
-  resolve(5)
+  setTimeout(function () {
+    resolve(5);
+  });
 });
 
 
@@ -89,7 +89,6 @@ console.log(Promises.then(function (res) {
       console.log('lastVal: ', lastVal);
     });
   }, 1000);
-  
 }));
-// console.log(Promise)
+console.log(Promises)
 console.log('hey this should be first not last')
